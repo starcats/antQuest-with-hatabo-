@@ -55,15 +55,7 @@ phina.define('MainScene', {
     this.bg = Sprite('bg',640,600).addChildTo(this).setOrigin(0,0);
     this.bgLine = Sprite('bgLine',640,600).addChildTo(this).setOrigin(0,0);
      // グループ管理
-    this.foodGroup = DisplayElement().addChildTo(this);
     this.antGroup = DisplayElement().addChildTo(this);
-    // 食べ物配置
-    var self = this;
-    Array.range(40,620,80).each(function(spanX) {
-      var food = Sprite('food',30,30).addChildTo(self.foodGroup)
-        .setOrigin(0.5,0)
-        .setPosition(spanX,150);
-    });
     // スコア背景生成
     Sprite('menuButton',400,120).addChildTo(this).setPosition(220,70);
     // スキル生成
@@ -90,6 +82,15 @@ phina.define('MainScene', {
       fill: 'white',
       fontSize: 20,
     }).addChildTo(this).setPosition(530,50); 
+    // 食べ物配置
+    this.dammyGroup = DisplayElement().addChildTo(this);
+    this.foodGroup = DisplayElement().addChildTo(this);
+    var self = this;
+    Array.range(40,620,80).each(function(spanX) {
+      var food = Sprite('food',30,30).addChildTo(self.foodGroup)
+        .setOrigin(0.5,0)
+        .setPosition(spanX,150);
+    });
     // タッチ座標管理
     this.onpointstart = function(e) {
       TX = e.pointer.x;
@@ -144,8 +145,15 @@ phina.define('MainScene', {
     FOOD.each(function(food) {
       ANT.some(function(ant) {
         if (food.hitTestElement(ant)) {
-          console.log("ok");
           food.remove();
+          var dammy = Sprite('food',30,30).addChildTo(self.dammyGroup).setPosition(food.x,150);
+          dammy.tweener.moveTo(280,45)
+            .call(function() {
+              dammy.remove();
+              foodScore++;
+              Sprite('food',30,30).addChildTo(self.foodGroup).setOrigin(0.5,0).setPosition(food.x,150);
+            })
+            .play();
           return true;
         }
       });

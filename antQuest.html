@@ -26,11 +26,13 @@ var TX = 0;//タッチした座標
 var TY = 0;
 var antNow = 0;
 var antMax = 5;
+var menuGroupFlag = 1; //menuのタッチ管理
 
 var ASSETS = {
   image: {
-    bg: 'images/antsWar_bg.png',
-    bgLine: 'images/antQuest_bg.png',
+    bg: 'images/antQuest_bg.png',
+    menu2bg: 'images/antQuest_menu2bg.png',
+    bgLine: 'images/antQuest_bgLine.png',
     foodMenu: 'images/antsWar_foodMenu.png',
     upgradeMenu: 'images/antsWar_upgradeMenu.png',
     armyMenu: 'images/antsWar_armyMenu.png',
@@ -58,9 +60,15 @@ phina.define('MainScene', {
     // 背景色を指定
     this.backgroundColor = '#444';
 
+    // メニュー切り替えの画像切り替えを管理
+    this.menuGroup1 = DisplayElement().addChildTo(this);
+    this.menuGroup2 = DisplayElement().addChildTo(this);
+    this.menuGroup3 = DisplayElement().addChildTo(this);
+    this.menuGroup4 = DisplayElement().addChildTo(this);
     // 背景を生成
     // tmxの代わりに配置
-    this.bg = Sprite('bg',640,600).addChildTo(this).setOrigin(0,0);
+    this.bg = Sprite('bg',640,530).addChildTo(this.menuGroup1).setOrigin(0,0);
+    this.menu2bg = Sprite('menu2bg',640,530).addChildTo(this.menuGroup2).setOrigin(0,0).hide();
     
     //全レイヤーを重ね合わせた画像を取得する場合
     //.tmxファイルからマップをイメージとして取得し、スプライトで表示
@@ -72,39 +80,35 @@ phina.define('MainScene', {
     //   .addChildTo(this);
 
     // LINE
-    this.bgLine = Sprite('bgLine',640,600).addChildTo(this).setOrigin(0,0);
+    this.bgLine = Sprite('bgLine',640,530).addChildTo(this.menuGroup1).setOrigin(0,0);
 
      // グループ管理
-    this.antGroup = DisplayElement().addChildTo(this);
+    this.antGroup = DisplayElement().addChildTo(this.menuGroup1);//menu1のアリを管理
     // スコア背景生成
-    Sprite('menuButton',400,120).addChildTo(this).setPosition(220,70);
-    // スキル生成
-    this.skillButton = Sprite('menuButton',180,80).addChildTo(this).setPosition(530,50);
-    // メニューボタン生成
-    this.menuButton = MENUBUTTON().addChildTo(this);
-    // アリ生成
-    this.ant = ant().addChildTo(this);
+    Sprite('menuButton',400,120).addChildTo(this.menuGroup1).setPosition(220,70);
+    // スキルボタン背景生成
+    this.skillButton = Sprite('menuButton',180,80).addChildTo(this.menuGroup1).setPosition(530,50);
     // スコアラベル表示
     this.food = Label({
       text: '',
       fill: 'white',
       fontSize: 30,
-    }).addChildTo(this).setOrigin(0,0.5).setPosition(30,60);
+    }).addChildTo(this.menuGroup1).setOrigin(0,0.5).setPosition(30,60);
     // アリさんMAX数表示
     this.antCount = Label({
       text: '',
       fill: 'white',
       fontSize: 20,
-    }).addChildTo(this).setOrigin(0,0.5).setPosition(30,100);
+    }).addChildTo(this.menuGroup1).setOrigin(0,0.5).setPosition(30,100);
     // スキルラベル表示
     this.skillLabel = Label({
       text: 'シュガーラッシュ',
       fill: 'white',
       fontSize: 20,
-    }).addChildTo(this).setPosition(530,50); 
+    }).addChildTo(this.menuGroup1).setPosition(530,50); 
     // 食べ物配置
-    this.dammyGroup = DisplayElement().addChildTo(this);
-    this.foodGroup = DisplayElement().addChildTo(this);
+    this.dammyGroup = DisplayElement().addChildTo(this.menuGroup1);
+    this.foodGroup = DisplayElement().addChildTo(this.menuGroup1);
     var self = this;
     Array.range(40,620,80).each(function(spanX) {
       var food = Sprite('food',30,30).addChildTo(self.foodGroup)
@@ -115,47 +119,153 @@ phina.define('MainScene', {
     this.onpointstart = function(e) {
       TX = e.pointer.x;
       TY = e.pointer.y;
+      console.log(TY);
     };
 
+    //
+    // ボタン関連
+    //
+
+    var buttonX = 20;
+    var buttonY = 890;
+    var buttonWidth = 10 + 130 + 10;//左右は余白
+    var buttonHeight = 10 + 50 + 10;//左右は余白
+    var buttonPositionX = buttonWidth / 2;
+    var buttonPositionY = buttonY + buttonHeight / 2;
+    //メニュー背景
+    var bg = Sprite('menuBg').addChildTo(this).setOrigin(0,0).setPosition(0,buttonY);
+    var food = Sprite('menuButton').addChildTo(this).setPosition(buttonX + buttonPositionX,buttonPositionY);
+    var upgrade = Sprite('menuButton').addChildTo(this).setPosition(buttonX + buttonWidth * 1 + buttonPositionX,buttonPositionY);
+    var army = Sprite('menuButton').addChildTo(this).setPosition(buttonX + buttonWidth * 2 + buttonPositionX,buttonPositionY);
+    var battle = Sprite('menuButton').addChildTo(this).setPosition(buttonX + buttonWidth * 3 + buttonPositionX,buttonPositionY);
+    // ラベル表示
+    this.label = Label({
+      text: '',
+      fill: 'white',
+      fontSize: 30,
+    });
+    Label({text: "food",fill: "white"}).addChildTo(this).setPosition(buttonX + buttonPositionX,buttonPositionY);
+    Label({text: "upgrade",fill: "white"}).addChildTo(this).setPosition(buttonX + buttonWidth * 1 + buttonPositionX,buttonPositionY);
+    Label({text: "army",fill: "white"}).addChildTo(this).setPosition(buttonX + buttonWidth * 2 + buttonPositionX,buttonPositionY);
+    Label({text: "battle",fill: "white"}).addChildTo(this).setPosition(buttonX + buttonWidth * 3 + buttonPositionX,buttonPositionY);
+    // タッチ可能にする
+    food.setInteractive(true);
+    upgrade.setInteractive(true);
+    army.setInteractive(true);
+    battle.setInteractive(true);
+    // 各メニュー読み込み
+    this.foodMenu = foodMenu(0,530).addChildTo(this.menuGroup1);
+    this.upgradeMenu = upgradeMenu(0,530).addChildTo(this.menuGroup2).hide();
+    this.armyMenu = armyMenu(0,530).addChildTo(this.menuGroup3).hide();
+    this.battleMenu = battleMenu(0,530).addChildTo(this.menuGroup4).hide();
+    // 各種ボタン処理
+    var self = this;
+    food.on('pointstart', function() {
+      console.log("food")
+      self.menuGroup1.children.each(function(child) {
+        child.show();
+      });
+      self.menuGroup2.children.each(function(child) {
+        child.hide();
+      });
+      self.menuGroup3.children.each(function(child) {
+        child.hide();
+      });
+      self.menuGroup4.children.each(function(child) {
+        child.hide();
+      });
+      menuGroupFlag = 1;
+    });
+    upgrade.on('pointstart', function() {
+      console.log("upgrade")
+      self.menuGroup1.children.each(function(child) {
+        child.hide();
+      });
+      self.menuGroup2.children.each(function(child) {
+        child.show();
+      });
+      self.menuGroup3.children.each(function(child) {
+        child.hide();
+      });
+      self.menuGroup4.children.each(function(child) {
+        child.hide();
+      });
+      menuGroupFlag = 2;
+    });
+    army.on('pointstart', function() {
+      console.log("army")
+      self.menuGroup1.children.each(function(child) {
+        child.hide();
+      });
+      self.menuGroup2.children.each(function(child) {
+        child.hide();
+      });
+      self.menuGroup3.children.each(function(child) {
+        child.show();
+      });
+      self.menuGroup4.children.each(function(child) {
+        child.hide();
+      });
+      menuGroupFlag = 3;
+    });
+    battle.on('pointstart', function() {
+      console.log("battle")
+      self.menuGroup1.children.each(function(child) {
+        child.hide();
+      });
+      self.menuGroup2.children.each(function(child) {
+        child.hide();
+      });
+      self.menuGroup3.children.each(function(child) {
+        child.hide();
+      });
+      self.menuGroup4.children.each(function(child) {
+        child.show();
+      });
+      menuGroupFlag = 4;
+    });
   },
+
   update: function() {
     this.food.text = "飴を集めた数: " + foodScore;　
     this.antCount.text = "アリさん最大数: " + antNow + "/" + antMax;　
 
     // タッチ範囲でありさん出陣　もっとクールな書き方があるはず、でもとりあえず
-    var x = 80;
-    if(TY > 150 && TY < 640 && antNow < antMax) {
-      if (TX > 0 && TX <= x) {
-        TX = 40;
-        arisan(TX).addChildTo(this.antGroup);
-      } else if (TX > x && TX <= x*2) {
-        TX = 40 + x;
-        arisan(TX).addChildTo(this.antGroup);
-      } else if (TX > x*2&& TX <= x*3) {
-        TX = 40 + x*2;
-        arisan(TX).addChildTo(this.antGroup);
-      } else if (TX > x*3 && TX <= x*4) {
-        TX = 40 + x*3;
-        arisan(TX).addChildTo(this.antGroup);
-      } else if (TX > x*4 && TX <= x*5) {
-        TX = 40 + x*4;
-        arisan(TX).addChildTo(this.antGroup);
-      } else if (TX > x*5 && TX <= x*6) {
-        TX = 40 + x*5;
-        arisan(TX).addChildTo(this.antGroup);
-      } else if (TX > x*6 && TX <= x*7) {
-        TX = 40 + x*6;
-        arisan(TX).addChildTo(this.antGroup);
-      } else if (TX > x*7 && TX <= x*8) {
-        TX = 40 + x*7;
-        arisan(TX).addChildTo(this.antGroup);
+    if (menuGroupFlag === 1) {
+      var x = 80;
+      if(TY > 150 && TY < 530 && antNow < antMax) {
+        if (TX > 0 && TX <= x) {
+          TX = 40;
+          arisan(TX).addChildTo(this.antGroup);
+        } else if (TX > x && TX <= x*2) {
+          TX = 40 + x;
+          arisan(TX).addChildTo(this.antGroup);
+        } else if (TX > x*2&& TX <= x*3) {
+          TX = 40 + x*2;
+          arisan(TX).addChildTo(this.antGroup);
+        } else if (TX > x*3 && TX <= x*4) {
+          TX = 40 + x*3;
+          arisan(TX).addChildTo(this.antGroup);
+        } else if (TX > x*4 && TX <= x*5) {
+          TX = 40 + x*4;
+          arisan(TX).addChildTo(this.antGroup);
+        } else if (TX > x*5 && TX <= x*6) {
+          TX = 40 + x*5;
+          arisan(TX).addChildTo(this.antGroup);
+        } else if (TX > x*6 && TX <= x*7) {
+          TX = 40 + x*6;
+          arisan(TX).addChildTo(this.antGroup);
+        } else if (TX > x*7 && TX <= x*8) {
+          TX = 40 + x*7;
+          arisan(TX).addChildTo(this.antGroup);
+        }
+        antNow++;
+        TX = 0;
+        TY = 0;
+      } else if (antNow === antMax) {
+        TX = 0;
+        TY = 0;
       }
-      antNow++;
-      TX = 0;
-      TY = 0;
-    } else if (antNow === antMax) {
-      TX = 0;
-      TY = 0;
     }
     // アリさんと食べ物ヒット判定
     var FOOD = this.foodGroup.children
@@ -204,81 +314,6 @@ phina.define('arisan', {
 });
 
 
- /*
- * メニューボタン
- */
-phina.define('MENUBUTTON', {
-  superClass: 'DisplayElement',
-
-  init: function() {
-    this.superInit();
-    var buttonX = 20;
-    var buttonY = 890;
-    var buttonWidth = 10 + 130 + 10;//左右は余白
-    var buttonHeight = 10 + 50 + 10;//左右は余白
-    var buttonPositionX = buttonWidth / 2;
-    var buttonPositionY = buttonY + buttonHeight / 2;
-    //メニュー背景
-    var bg = Sprite('menuBg').addChildTo(this).setOrigin(0,0).setPosition(0,buttonY);
-    var food = Sprite('menuButton').addChildTo(this).setPosition(buttonX + buttonPositionX,buttonPositionY);
-    var upgrade = Sprite('menuButton').addChildTo(this).setPosition(buttonX + buttonWidth * 1 + buttonPositionX,buttonPositionY);
-    var army = Sprite('menuButton').addChildTo(this).setPosition(buttonX + buttonWidth * 2 + buttonPositionX,buttonPositionY);
-    var battle = Sprite('menuButton').addChildTo(this).setPosition(buttonX + buttonWidth * 3 + buttonPositionX,buttonPositionY);
-    // ラベル表示
-    this.label = Label({
-      text: '',
-      fill: 'white',
-      fontSize: 30,
-    });
-    Label({text: "food",fill: "white"}).addChildTo(this).setPosition(buttonX + buttonPositionX,buttonPositionY);
-    Label({text: "upgrade",fill: "white"}).addChildTo(this).setPosition(buttonX + buttonWidth * 1 + buttonPositionX,buttonPositionY);
-    Label({text: "army",fill: "white"}).addChildTo(this).setPosition(buttonX + buttonWidth * 2 + buttonPositionX,buttonPositionY);
-    Label({text: "battle",fill: "white"}).addChildTo(this).setPosition(buttonX + buttonWidth * 3 + buttonPositionX,buttonPositionY);
-    // タッチ可能にする
-    food.setInteractive(true);
-    upgrade.setInteractive(true);
-    army.setInteractive(true);
-    battle.setInteractive(true);
-    // 各メニュー読み込み
-    this.menuGroup = DisplayElement().addChildTo(this);
-    this.foodMenu = foodMenu(0,530).addChildTo(this.menuGroup);
-    this.upgradeMenu = upgradeMenu(0,530).addChildTo(this.menuGroup).hide();
-    this.armyMenu = armyMenu(0,530).addChildTo(this.menuGroup).hide();
-    this.battleMenu = battleMenu(0,530).addChildTo(this.menuGroup).hide();
-    // 各種ボタン
-    var self = this;
-    food.on('pointstart', function() {
-      console.log("food")
-      self.menuGroup.children.each(function(child) {
-        child.hide();
-      });
-      self.foodMenu.show();
-    });
-    upgrade.on('pointstart', function() {
-      console.log("upgrade")
-      self.menuGroup.children.each(function(child) {
-        child.hide();
-      });
-      self.upgradeMenu.show();
-    });
-    army.on('pointstart', function() {
-      console.log("army")
-      self.menuGroup.children.each(function(child) {
-        child.hide();
-      });
-      self.armyMenu.show();
-    });
-    battle.on('pointstart', function() {
-      console.log("battle")
-      self.menuGroup.children.each(function(child) {
-        child.hide();
-      });
-      self.battleMenu.show();
-    });
-
-  },
-});
-
 
  /*
  * 餌やり画面
@@ -295,33 +330,16 @@ phina.define('foodMenu', {
 
     //餌を探しに行くボタン
     this.feedButton = Button({
-      text: '餌を探す',
+      text: '仮ボタン',
       fill: 'rgb(100,100,100)',
       stroke: "white",
       width: 250,
       height: 70,
       fontSize: 25,
     }).addChildTo(this.buttonGroup).setPosition(480,575);
-    //ボタンを押した時クエストバー出現
+    //ボタンを押した時
     this.feedButton.on('click', function() {
-      if (searchFoodFlag === 0) {
-        questBar(20,575).addChildTo(this);
-        QUESTTIME = 1;
-        searchFoodFlag = 1;
-      }
-    }.bind(this));
-
-    //餌を回収するボタン
-    this.antButton = Button({
-      text: '餌を回収する',
-      fill: 'rgb(100,100,100)',
-      stroke: "white",
-      width: 250,
-      height: 70,
-      fontSize: 25,
-    }).addChildTo(this.buttonGroup).setPosition(480,665);
-    this.antButton.on('click', function() {
-      antButtonFlag=1;
+      //ここに処理
     }.bind(this));
   },
 
@@ -353,7 +371,7 @@ phina.define('upgradeMenu', {
     this.buttonGroup = DisplayElement().addChildTo(this);
     //ボタン生成
     var menuChange = Button({
-      text: '餌を探す速度向上',
+      text: 'クマ戦士',
       fill: 'rgb(100,100,100)',
       stroke: "white",
       width: 250,
@@ -362,7 +380,7 @@ phina.define('upgradeMenu', {
     }).addChildTo(this.buttonGroup).setPosition(480,575);
     //ボタンを押した時
     menuChange.on('click', function() {
-      console.log("速度向上");
+      console.log("クマ戦士を雇う");
     }.bind(this));
   },
   update:function() {
@@ -389,33 +407,8 @@ phina.define('armyMenu', {
     this.superInit();
     // メニュー背景
     this.foodmenu2 = Sprite('armyMenu',640,360).addChildTo(this).setOrigin(0,0).setPosition(x,y);
-    // ボタン関連Childボタンを生成したらここに格納する
-    this.buttonGroup = DisplayElement().addChildTo(this);
-    // ボタン生成
-    var menuChange = Button({
-      text: '兵隊アリを生産',
-      fill: 'rgb(100,100,100)',
-      stroke: "white",
-      width: 250,
-      height: 70,
-      fontSize: 25,
-    }).addChildTo(this.buttonGroup).setPosition(480,575);
-    // ボタンを押した時
-    menuChange.on('click', function() {
-      console.log("アリ生産");
-    }.bind(this));
   },
   update:function() {
-    // hideの時タッチ判定をオフにする
-    if (this.visible === false) {
-      this.buttonGroup.children.each(function(child) {
-        child.setInteractive(false);
-      });
-    } else {
-      this.buttonGroup.children.each(function(child) {
-        child.setInteractive(true);
-      });
-    }
   },
 });
 
@@ -429,85 +422,60 @@ phina.define('battleMenu', {
     this.superInit();
     // メニュー背景
     this.foodmenu2 = Sprite('battleMenu',640,360).addChildTo(this).setOrigin(0,0).setPosition(x,y);
-    // ボタン関連Childボタンを生成したらここに格納する
-    this.buttonGroup = DisplayElement().addChildTo(this);
-    // ボタン生成
-    var menuChange = Button({
-      text: '兵隊アリ出陣',
-      fill: 'rgb(100,100,100)',
-      stroke: "white",
-      width: 250,
-      height: 70,
-      fontSize: 25,
-    }).addChildTo(this.buttonGroup).setPosition(480,575);
-    // ボタンを押した時
-    menuChange.on('click', function() {
-      console.log("出陣");
-    }.bind(this));
   },
   update:function() {
-    // hideの時タッチ判定をオフにする
-    if (this.visible === false) {
-      this.buttonGroup.children.each(function(child) {
-        child.setInteractive(false);
-      });
-    } else {
-      this.buttonGroup.children.each(function(child) {
-        child.setInteractive(true);
-      });
-    }
   },
 });
 
- /*
- * アリさん
- */
-phina.define('ant', {
-  superClass: 'DisplayElement',
+//  /*
+//  * アリさん
+//  */
+// phina.define('ant', {
+//   superClass: 'DisplayElement',
 
-  init: function(x,y,maxWidth,height) {
-    this.superInit();
-    // foodの位置を管理
-    this.foodGroup = DisplayElement().addChildTo(this);
-  },
+//   init: function(x,y,maxWidth,height) {
+//     this.superInit();
+//     // foodの位置を管理
+//     this.foodGroup = DisplayElement().addChildTo(this);
+//   },
   
 
-  update: function(app) {
-    // 餌が出現してたら餌を回収しに行く
-    var self = this;
-    if (this.foodGroup.children.length - screenFoodCount > 0 && antButtonFlag === 1) {
-      antButtonFlag = 0;
-      this.foodColect();
-    }
-    if (searchFoodFlag === 2) {
-      this.addFood();
-      console.log('addFood');
-    }
-  },
-  foodColect: function() {
-    var self = this;
-    console.log('ok');
-    console.log(this.foodGroup.children.length);
-    var antSprite = Sprite('ant',60,60).addChildTo(this).setPosition(300,300);
-    screenFoodCount++;
-    console.log(this.foodGroup.children[screenFoodCount - 1].x);
-    antSprite.tweener.moveTo(this.foodGroup.children[screenFoodCount - 1].x,this.foodGroup.children[screenFoodCount - 1].y,3000)
-      .call(function(){
-        self.foodGroup.children.shift();
-        screenFoodCount--;
-      })
-      .moveTo(300,300,3000)
-      .call(function(){
-        antSprite.remove();
-        foodScore++;
-      })
-      .play();
-  },
-  addFood: function() {
-    Sprite('food').addChildTo(this.foodGroup).setPosition(Math.randint(40,600),Math.randint(40,500));//餌を探しに行った時餌出現
-    searchFoodFlag = 0;
-  },
-});
+//   update: function(app) {
+//     // 餌が出現してたら餌を回収しに行く
+//     var self = this;
+//     if (this.foodGroup.children.length - screenFoodCount > 0 && antButtonFlag === 1) {
+//       antButtonFlag = 0;
+//       this.foodColect();
+//     }
+//     if (searchFoodFlag === 2) {
+//       this.addFood();
+//       console.log('addFood');
+//     }
+//   },
+//   foodColect: function() {
+//     var self = this;
+//     console.log('ok');
+//     console.log(this.foodGroup.children.length);
+//     var antSprite = Sprite('ant',60,60).addChildTo(this).setPosition(300,300);
+//     screenFoodCount++;
+//     console.log(this.foodGroup.children[screenFoodCount - 1].x);
+//     antSprite.tweener.moveTo(this.foodGroup.children[screenFoodCount - 1].x,this.foodGroup.children[screenFoodCount - 1].y,3000)
+//       .call(function(){
+//         self.foodGroup.children.shift();
+//         screenFoodCount--;
+//       })
+//       .moveTo(300,300,3000)
+//       .call(function(){
+//         antSprite.remove();
+//         foodScore++;
+//       })
+//       .play();
+//   },
+//   addFood: function() {
+//     Sprite('food').addChildTo(this.foodGroup).setPosition(Math.randint(40,600),Math.randint(40,500));//餌を探しに行った時餌出現
+//     searchFoodFlag = 0;
+//   },
+// });
 
  /*
  * クエスト進捗バー

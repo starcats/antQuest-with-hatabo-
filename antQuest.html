@@ -32,6 +32,7 @@ var ASSETS = {
   image: {
     bg: 'images/antQuest_bg.png',
     menu2bg: 'images/antQuest_menu2bg.png',
+    unitBg: 'images/antQuest_unitBg.png',
     bgLine: 'images/antQuest_bgLine.png',
     foodMenu: 'images/antsWar_foodMenu.png',
     upgradeMenu: 'images/antsWar_upgradeMenu.png',
@@ -60,15 +61,27 @@ phina.define('MainScene', {
     // 背景色を指定
     this.backgroundColor = '#444';
 
+    // タッチ座標管理
+    this.onpointstart = function(e) {
+      TX = e.pointer.x;
+      TY = e.pointer.y;
+      console.log(TX);
+      console.log(TY);
+    };
+
     // メニュー切り替えの画像切り替えを管理
     this.menuGroup1 = DisplayElement().addChildTo(this);
     this.menuGroup2 = DisplayElement().addChildTo(this);
     this.menuGroup3 = DisplayElement().addChildTo(this);
     this.menuGroup4 = DisplayElement().addChildTo(this);
+
+    //
+    // menu1
+    //
+    
     // 背景を生成
     // tmxの代わりに配置
     this.bg = Sprite('bg',640,530).addChildTo(this.menuGroup1).setOrigin(0,0);
-    this.menu2bg = Sprite('menu2bg',640,530).addChildTo(this.menuGroup2).setOrigin(0,0).hide();
     
     //全レイヤーを重ね合わせた画像を取得する場合
     //.tmxファイルからマップをイメージとして取得し、スプライトで表示
@@ -85,7 +98,7 @@ phina.define('MainScene', {
      // グループ管理
     this.antGroup = DisplayElement().addChildTo(this.menuGroup1);//menu1のアリを管理
     // スコア背景生成
-    Sprite('menuButton',400,120).addChildTo(this.menuGroup1).setPosition(220,70);
+    Sprite('menuButton',400,120).addChildTo(this).setPosition(220,70);
     // スキルボタン背景生成
     this.skillButton = Sprite('menuButton',180,80).addChildTo(this.menuGroup1).setPosition(530,50);
     // スコアラベル表示
@@ -93,13 +106,13 @@ phina.define('MainScene', {
       text: '',
       fill: 'white',
       fontSize: 30,
-    }).addChildTo(this.menuGroup1).setOrigin(0,0.5).setPosition(30,60);
+    }).addChildTo(this).setOrigin(0,0.5).setPosition(30,60);
     // アリさんMAX数表示
     this.antCount = Label({
       text: '',
       fill: 'white',
       fontSize: 20,
-    }).addChildTo(this.menuGroup1).setOrigin(0,0.5).setPosition(30,100);
+    }).addChildTo(this).setOrigin(0,0.5).setPosition(30,100);
     // スキルラベル表示
     this.skillLabel = Label({
       text: 'シュガーラッシュ',
@@ -115,15 +128,18 @@ phina.define('MainScene', {
         .setOrigin(0.5,0)
         .setPosition(spanX,150);
     });
-    // タッチ座標管理
-    this.onpointstart = function(e) {
-      TX = e.pointer.x;
-      TY = e.pointer.y;
-      console.log(TY);
-    };
 
     //
-    // ボタン関連
+    // menu2
+    //
+
+    // 背景
+    this.menu2bg = Sprite('menu2bg',640,530).addChildTo(this.menuGroup2).setOrigin(0,0).hide();
+    // 戦闘ユニットボタン
+    this.unitBg = Sprite('unitBg').addChildTo(this.menuGroup2).setOrigin(0,0).setPosition(0,410).hide();
+
+    //
+    // 下部ボタン関連
     //
 
     var buttonX = 20;
@@ -371,7 +387,7 @@ phina.define('upgradeMenu', {
     this.buttonGroup = DisplayElement().addChildTo(this);
     //ボタン生成
     var menuChange = Button({
-      text: 'クマ戦士',
+      text: 'クマ戦士を雇う',
       fill: 'rgb(100,100,100)',
       stroke: "white",
       width: 250,
@@ -382,6 +398,21 @@ phina.define('upgradeMenu', {
     menuChange.on('click', function() {
       console.log("クマ戦士を雇う");
     }.bind(this));
+
+    //ボタン生成
+    var menuChange = Button({
+      text: '戦闘!',
+      fill: 'rgb(100,100,100)',
+      stroke: "white",
+      width: 150,
+      height: 70,
+      fontSize: 25,
+    }).addChildTo(this.buttonGroup).setPosition(480,460);
+    //ボタンを押した時
+    menuChange.on('click', function() {
+      console.log("クマ戦士を雇う");
+    }.bind(this));
+
   },
   update:function() {
     // hideの時タッチ判定をオフにする

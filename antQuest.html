@@ -33,6 +33,7 @@ var ASSETS = {
     bg: 'images/antQuest_bg.png',
     menu2bg: 'images/antQuest_menu2bg.png',
     unitBg: 'images/antQuest_unitBg.png',
+    unit1: 'images/antQuest_unit1.png',
     bgLine: 'images/antQuest_bgLine.png',
     foodMenu: 'images/antsWar_foodMenu.png',
     upgradeMenu: 'images/antsWar_upgradeMenu.png',
@@ -383,7 +384,12 @@ phina.define('upgradeMenu', {
     this.superInit();
     //メニュー背景
     this.foodmenu2 = Sprite('upgradeMenu',640,360).addChildTo(this).setOrigin(0,0).setPosition(x,y);
-    // ボタン関連Child
+    // unit1画像生成
+    Sprite('unit1').addChildTo(this).setPosition(50,575);
+    // unit選択
+    this.unitGroup = DisplayElement().addChildTo(this);
+    this.unit1 = Sprite('unit1')
+    // ボタン関連管理Child
     this.buttonGroup = DisplayElement().addChildTo(this);
     //ボタン生成
     var menuChange = Button({
@@ -410,8 +416,9 @@ phina.define('upgradeMenu', {
     }).addChildTo(this.buttonGroup).setPosition(480,460);
     //ボタンを押した時
     menuChange.on('click', function() {
-      console.log("クマ戦士を雇う");
+      console.log("戦いに行く");
     }.bind(this));
+    
 
   },
   update:function() {

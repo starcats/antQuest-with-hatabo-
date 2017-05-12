@@ -39,10 +39,12 @@ var ASSETS = {
     menuBg: 'images/antsWar_menuBg.png',
     ant: 'images/antQuest_ant.png',
     food: 'images/antQuest_food.png',
-    touchZone: 'images/antQuest_touchZone.png',
   }, 
    tmx: {
-            "test": "images/antQuest_mapedeitTest.tmx",
+            //tmxとmp3はローカルで見ることができないサーバーに上げて使う場合
+            //tmx内の<image source="antQuest_mapedeitTest.png"
+            //ここもきちんとしたpathを入れなければならない。
+            //"test": "images/antQuest_mapedeitTest.tmx",
         },
 };
 
@@ -55,19 +57,22 @@ phina.define('MainScene', {
     this.width = 640;
     // 背景色を指定
     this.backgroundColor = '#444';
-    
-    //全レイヤーを重ね合わせた画像を取得
-    //.tmxファイルからマップをイメージとして取得し、スプライトで表示
-    this.tmx = phina.asset.AssetManager.get("tmx", "test");
-    this.test = phina.display.Sprite(this.tmx.image)
-      .setOrigin(0, 0)
-      .setPosition(0, 0)
-      .addChildTo(this);
+
     // 背景を生成
-    // this.bg = Sprite('bg',640,600).addChildTo(this).setOrigin(0,0);
-    // this.bgLine = Sprite('bgLine',640,600).addChildTo(this).setOrigin(0,0);
+    // tmxの代わりに配置
+    this.bg = Sprite('bg',640,600).addChildTo(this).setOrigin(0,0);
+    
+    //全レイヤーを重ね合わせた画像を取得する場合
+    //.tmxファイルからマップをイメージとして取得し、スプライトで表示
+    //tmxはサーバーで上げた時のみ表示可能
+    // this.tmx = AssetManager.get("tmx", "test");
+    // this.test = Sprite(this.tmx.image)
+    //   .setOrigin(0, 0)
+    //   .setPosition(0, 0)
+    //   .addChildTo(this);
 
-
+    // LINE
+    this.bgLine = Sprite('bgLine',640,600).addChildTo(this).setOrigin(0,0);
 
      // グループ管理
     this.antGroup = DisplayElement().addChildTo(this);
@@ -198,18 +203,7 @@ phina.define('arisan', {
   },
 });
 
- /*
- * 食べ物
- */
-phina.define('food', {
-  superClass: 'Sprite',
 
-  init: function(x) {
-    this.superInit('food',30,30);
-    // foodの位置を管理
-    this.food = Sprite('food',30,30).addChildTo(this);
-  },
-});
  /*
  * メニューボタン
  */

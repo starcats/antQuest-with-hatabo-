@@ -42,7 +42,7 @@ var ASSETS = {
     touchZone: 'images/antQuest_touchZone.png',
   }, 
    tmx: {
-            "test": "https://cdn.rawgit.com/starcats/antQuest-with-hatabo-/e29c4670/images/test.tmx",
+            "test": "images/antQuest_mapedeitTest.tmx",
         },
 };
 
@@ -56,21 +56,19 @@ phina.define('MainScene', {
     // 背景色を指定
     this.backgroundColor = '#444';
     
-    
-
-    this.mapBase = phina.display.DisplayElement()
-      .setPosition(0, 0)
-      .addChildTo(this);
     //全レイヤーを重ね合わせた画像を取得
     //.tmxファイルからマップをイメージとして取得し、スプライトで表示
     this.tmx = phina.asset.AssetManager.get("tmx", "test");
     this.test = phina.display.Sprite(this.tmx.image)
       .setOrigin(0, 0)
       .setPosition(0, 0)
-      .addChildTo(this.mapBase);
+      .addChildTo(this);
     // 背景を生成
-    this.bg = Sprite('bg',640,600).addChildTo(this).setOrigin(0,0);
-    this.bgLine = Sprite('bgLine',640,600).addChildTo(this).setOrigin(0,0);
+    // this.bg = Sprite('bg',640,600).addChildTo(this).setOrigin(0,0);
+    // this.bgLine = Sprite('bgLine',640,600).addChildTo(this).setOrigin(0,0);
+
+
+
      // グループ管理
     this.antGroup = DisplayElement().addChildTo(this);
     // スコア背景生成
